@@ -5,6 +5,8 @@ on:
   push:
     branches:
       - 10-alpha-2
+      - master
+      - main
 
 jobs:
   build-release-apk:
