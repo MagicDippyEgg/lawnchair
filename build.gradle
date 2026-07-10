@@ -406,3 +406,9 @@ protobuf {
 }
 
 apply plugin: 'kotlin-android-extensions'
+
+tasks.whenTaskAdded { task ->
+    if (task.name.toLowerCase().contains("strip")) {
+        task.enabled = false
+    }
+}
