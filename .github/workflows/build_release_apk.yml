@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - 11-dev
+      - 10-alpha-2
       - master
       - main
 
