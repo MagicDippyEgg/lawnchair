@@ -125,6 +125,8 @@ class LawnchairPreferences(val context: Context) : SharedPreferences.OnSharedPre
     var showAssistantIcon by BooleanPref("opa_assistant")
     val displayNotificationCount by BooleanPref("pref_displayNotificationCount", false, reloadAll)
     val forceShapeless by BooleanPref("pref_forceShapeless", false)
+    var themedIcons by BooleanPref("themed_icons", false, reloadAll)
+    var drawerThemedIcons by BooleanPref("drawer_themed_icons", false, recreate)
 
     // Desktop
     val allowFullWidthWidgets by BooleanPref("pref_fullWidthWidgets", false, restart)
