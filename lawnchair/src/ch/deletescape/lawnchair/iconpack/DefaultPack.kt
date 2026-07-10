@@ -95,6 +95,15 @@ class DefaultPack(context: Context) : IconPack(context, "") {
 
         val info = key.getLauncherActivityInfo(context) ?: return null
         val component = key.componentName
+
+        val iconProvider = com.android.launcher3.IconProvider.newInstance(context) as? LawnchairIconProvider
+        val td = iconProvider?.getThemeData(component)
+        if (td != null) {
+            val colors = iconProvider.getThemedColors(context)
+            val fg = td.loadMonochromeDrawable(colors[1])
+            return ThemedIconDrawable(android.graphics.drawable.ColorDrawable(colors[0]), fg)
+        }
+
         var originalIcon = info.getIcon(iconDpi).apply { mutate() }
         getLegacyIcon(component, iconDpi, prefs.forceShapeless)?.let {
             originalIcon = it.apply { mutate() }

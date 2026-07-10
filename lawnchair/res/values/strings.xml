@@ -35,6 +35,10 @@
 
     <string name="pref_icon_packs">Icon Packs</string>
     <string name="icon_pack_default">System Icons</string>
+    <string name="themed_icon_title">Themed Icons</string>
+    <string name="themed_icon_summary">Match icons to theme colors (requires Lawnicons)</string>
+    <string name="drawer_themed_icon_title">Themed Icons in Drawer</string>
+    <string name="drawer_themed_icon_summary">Match drawer icons to theme colors (requires Lawnicons)</string>
 
     <string name="pref_icon_pack_masking">Icon Masking</string>
     <string name="pref_icon_pack_masking_summary">Match unthemed icons to icon pack.</string>

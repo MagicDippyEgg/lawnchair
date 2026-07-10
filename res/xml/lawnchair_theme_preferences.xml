@@ -12,6 +12,20 @@
             android:persistent="true"
             android:title="@string/pref_icon_packs" />
 
+        <ch.deletescape.lawnchair.preferences.StyledSwitchPreferenceCompat
+            android:defaultValue="false"
+            android:key="themed_icons"
+            android:persistent="true"
+            android:summary="@string/themed_icon_summary"
+            android:title="@string/themed_icon_title" />
+
+        <ch.deletescape.lawnchair.preferences.StyledSwitchPreferenceCompat
+            android:defaultValue="false"
+            android:key="drawer_themed_icons"
+            android:persistent="true"
+            android:summary="@string/drawer_themed_icon_summary"
+            android:title="@string/drawer_themed_icon_title" />
+
         <ch.deletescape.lawnchair.settings.ui.IconMaskingPreference
             android:defaultValue="true"
             android:key="pref_iconPackMasking"
