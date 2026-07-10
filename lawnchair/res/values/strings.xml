@@ -39,6 +39,10 @@
     <string name="pref_icon_pack_masking">Icon Masking</string>
     <string name="pref_icon_pack_masking_summary">Match unthemed icons to icon pack.</string>
 
+    <string name="themed_icons_title">Themed icons</string>
+    <string name="themed_icons_summary">Recolor icons to match your wallpaper or a color you choose. Icons without a clean silhouette (e.g. photo-style icons) may look less accurate.</string>
+    <string name="themed_icons_color_title">Themed icon color</string>
+
     <string name="pref_legacy_treatment_title">Create Adaptive Icons</string>
     <string name="pref_legacy_treatment_summary">Create Adaptive Icons for all shortcuts.</string>
 

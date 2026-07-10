@@ -1,0 +1,128 @@
+diff --git a/lawnchair/res/values/resolvers.xml b/lawnchair/res/values/resolvers.xml
+index c6612f3..41f386b 100644
+--- a/lawnchair/res/values/resolvers.xml
++++ b/lawnchair/res/values/resolvers.xml
+@@ -69,6 +69,14 @@
+         <item>ch.deletescape.lawnchair.colors.WallpaperSecondaryColorResolver</item>
+         <item>ch.deletescape.lawnchair.colors.WallpaperTertiaryColorResolver</item>
+     </string-array>
++    <string-array name="resolvers_themed_icon">
++        <item>ch.deletescape.lawnchair.colors.WallpaperMainColorResolver</item>
++        <item>ch.deletescape.lawnchair.colors.WallpaperSecondaryColorResolver</item>
++        <item>ch.deletescape.lawnchair.colors.WallpaperTertiaryColorResolver</item>
++        <item>ch.deletescape.lawnchair.colors.LawnchairAccentResolver</item>
++        <item>ch.deletescape.lawnchair.colors.SystemAccentResolver</item>
++        <item>ch.deletescape.lawnchair.colors.PixelAccentResolver</item>
++    </string-array>
+     <string-array name="resolvers_superg_background">
+         <item>ch.deletescape.lawnchair.colors.resolvers.SuperGAutoResolver</item>
+         <item>ch.deletescape.lawnchair.colors.resolvers.SuperGLightResolver</item>
+diff --git a/lawnchair/res/values/strings.xml b/lawnchair/res/values/strings.xml
+index 0ecaa70..3557ff4 100644
+--- a/lawnchair/res/values/strings.xml
++++ b/lawnchair/res/values/strings.xml
+@@ -39,6 +39,10 @@
+     <string name="pref_icon_pack_masking">Icon Masking</string>
+     <string name="pref_icon_pack_masking_summary">Match unthemed icons to icon pack.</string>
+ 
++    <string name="themed_icons_title">Themed icons</string>
++    <string name="themed_icons_summary">Recolor icons to match your wallpaper or a color you choose. Icons without a clean silhouette (e.g. photo-style icons) may look less accurate.</string>
++    <string name="themed_icons_color_title">Themed icon color</string>
++
+     <string name="pref_legacy_treatment_title">Create Adaptive Icons</string>
+     <string name="pref_legacy_treatment_summary">Create Adaptive Icons for all shortcuts.</string>
+ 
+diff --git a/lawnchair/src/ch/deletescape/lawnchair/LawnchairPreferences.kt b/lawnchair/src/ch/deletescape/lawnchair/LawnchairPreferences.kt
+index a6e8fb6..24ac418 100644
+--- a/lawnchair/src/ch/deletescape/lawnchair/LawnchairPreferences.kt
++++ b/lawnchair/src/ch/deletescape/lawnchair/LawnchairPreferences.kt
+@@ -121,6 +121,7 @@ class LawnchairPreferences(val context: Context) : SharedPreferences.OnSharedPre
+     val hideStatusBar by BooleanPref("pref_hideStatusBar", lawnchairConfig.hideStatusBar, doNothing)
+     val iconPackMasking by BooleanPref("pref_iconPackMasking", true)
+     val adaptifyIconPacks by BooleanPref("pref_generateAdaptiveForIconPack", false)
++    val themedIcons by BooleanPref("pref_themedIcons", false, reloadAll)
+     var showVoiceSearchIcon by BooleanPref("opa_enabled")
+     var showAssistantIcon by BooleanPref("opa_assistant")
+     val displayNotificationCount by BooleanPref("pref_displayNotificationCount", false, reloadAll)
+diff --git a/lawnchair/src/ch/deletescape/lawnchair/colors/ColorEngine.kt b/lawnchair/src/ch/deletescape/lawnchair/colors/ColorEngine.kt
+index a6e55f5..95857b0 100644
+--- a/lawnchair/src/ch/deletescape/lawnchair/colors/ColorEngine.kt
++++ b/lawnchair/src/ch/deletescape/lawnchair/colors/ColorEngine.kt
+@@ -172,6 +172,7 @@ class ColorEngine private constructor(val context: Context) : LawnchairPreferenc
+             const val DOCK_BACKGROUND = "pref_dockBackgroundColorResolver"
+             const val ALLAPPS_BACKGROUND = "pref_allAppsBackgroundColorResolver"
+             const val SUPERG_BACKGROUND = "pref_superGBackgroundColorResolver"
++            const val THEMED_ICON = "pref_themedIconColorResolver"
+ 
+             fun getDefaultResolver(key: String, engine: ColorEngine): ColorResolver {
+                 val context = engine.context
+@@ -197,6 +198,11 @@ class ColorEngine private constructor(val context: Context) : LawnchairPreferenc
+                     SUPERG_BACKGROUND -> {
+                         SuperGAutoResolver(createConfig(key, engine))
+                     }
++                    THEMED_ICON -> {
++                        // Default to the wallpaper's main color, mirroring the
++                        // "automatic" behaviour of Material You theming.
++                        WallpaperMainColorResolver(createConfig(key, engine))
++                    }
+                     else -> {
+                         engine.createColorResolverNullable(key,
+                                 LawnchairConfig.getInstance(context).defaultColorResolver)
+diff --git a/lawnchair/src/ch/deletescape/lawnchair/iconpack/LawnchairIconProvider.kt b/lawnchair/src/ch/deletescape/lawnchair/iconpack/LawnchairIconProvider.kt
+index 57411b0..971f2d4 100644
+--- a/lawnchair/src/ch/deletescape/lawnchair/iconpack/LawnchairIconProvider.kt
++++ b/lawnchair/src/ch/deletescape/lawnchair/iconpack/LawnchairIconProvider.kt
+@@ -27,20 +27,23 @@ import com.android.launcher3.R
+ import com.android.launcher3.Utilities
+ import com.google.android.apps.nexuslauncher.DynamicIconProvider
+ 
+-class LawnchairIconProvider(context: Context) : DynamicIconProvider(context) {
++class LawnchairIconProvider(private val ctx: Context) : DynamicIconProvider(ctx) {
+ 
+-    private val iconPackManager by lazy { IconPackManager.getInstance(context) }
++    private val iconPackManager by lazy { IconPackManager.getInstance(ctx) }
+ 
+     override fun getIcon(launcherActivityInfo: LauncherActivityInfo, iconDpi: Int, flattenDrawable: Boolean): Drawable {
+-        return iconPackManager.getIcon(launcherActivityInfo, iconDpi, flattenDrawable, null, this).assertNotAdaptiveIconDrawable(launcherActivityInfo)
++        val icon = iconPackManager.getIcon(launcherActivityInfo, iconDpi, flattenDrawable, null, this)
++        return ThemedIconDrawable.themeIfEnabled(ctx, icon).assertNotAdaptiveIconDrawable(launcherActivityInfo)
+     }
+ 
+     fun getIcon(launcherActivityInfo: LauncherActivityInfo, itemInfo: ItemInfo, iconDpi: Int, flattenDrawable: Boolean): Drawable {
+-        return iconPackManager.getIcon(launcherActivityInfo, iconDpi, flattenDrawable, itemInfo, this).assertNotAdaptiveIconDrawable(launcherActivityInfo)
++        val icon = iconPackManager.getIcon(launcherActivityInfo, iconDpi, flattenDrawable, itemInfo, this)
++        return ThemedIconDrawable.themeIfEnabled(ctx, icon).assertNotAdaptiveIconDrawable(launcherActivityInfo)
+     }
+ 
+     fun getIcon(shortcutInfo: ShortcutInfo, iconDpi: Int): Drawable? {
+-        return iconPackManager.getIcon(shortcutInfo, iconDpi).assertNotAdaptiveIconDrawable(shortcutInfo)
++        val icon = iconPackManager.getIcon(shortcutInfo, iconDpi) ?: return null
++        return ThemedIconDrawable.themeIfEnabled(ctx, icon).assertNotAdaptiveIconDrawable(shortcutInfo)
+     }
+ 
+     fun getDynamicIcon(launcherActivityInfo: LauncherActivityInfo?, iconDpi: Int, flattenDrawable: Boolean): Drawable {
+diff --git a/res/xml/lawnchair_theme_preferences.xml b/res/xml/lawnchair_theme_preferences.xml
+index 8133652..5d70a9d 100644
+--- a/res/xml/lawnchair_theme_preferences.xml
++++ b/res/xml/lawnchair_theme_preferences.xml
+@@ -32,6 +32,20 @@
+             android:key="pref_resetCustomIcons"
+             android:title="@string/reset_custom_icons" />
+ 
++        <ch.deletescape.lawnchair.preferences.StyledSwitchPreferenceCompat
++            android:key="pref_themedIcons"
++            android:defaultValue="false"
++            android:persistent="true"
++            android:title="@string/themed_icons_title"
++            android:summary="@string/themed_icons_summary" />
++
++        <ch.deletescape.lawnchair.colors.preferences.ColorPickerPreference
++            android:key="pref_themedIconColorResolver"
++            android:title="@string/themed_icons_color_title"
++            android:dependency="pref_themedIcons"
++            app:colorMode="RGB"
++            app:resolvers="@array/resolvers_themed_icon"/>
++
+         <ch.deletescape.lawnchair.preferences.AdvancedPreferencesGroup
+             app:topic="@string/adaptive_icon">
+             <ch.deletescape.lawnchair.preferences.StyledSwitchPreferenceCompat

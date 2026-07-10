@@ -172,6 +172,7 @@ class ColorEngine private constructor(val context: Context) : LawnchairPreferenc
             const val DOCK_BACKGROUND = "pref_dockBackgroundColorResolver"
             const val ALLAPPS_BACKGROUND = "pref_allAppsBackgroundColorResolver"
             const val SUPERG_BACKGROUND = "pref_superGBackgroundColorResolver"
+            const val THEMED_ICON = "pref_themedIconColorResolver"
 
             fun getDefaultResolver(key: String, engine: ColorEngine): ColorResolver {
                 val context = engine.context
@@ -196,6 +197,11 @@ class ColorEngine private constructor(val context: Context) : LawnchairPreferenc
                     }
                     SUPERG_BACKGROUND -> {
                         SuperGAutoResolver(createConfig(key, engine))
+                    }
+                    THEMED_ICON -> {
+                        // Default to the wallpaper's main color, mirroring the
+                        // "automatic" behaviour of Material You theming.
+                        WallpaperMainColorResolver(createConfig(key, engine))
                     }
                     else -> {
                         engine.createColorResolverNullable(key,

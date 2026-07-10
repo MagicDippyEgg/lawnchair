@@ -27,20 +27,23 @@ import com.android.launcher3.R
 import com.android.launcher3.Utilities
 import com.google.android.apps.nexuslauncher.DynamicIconProvider
 
-class LawnchairIconProvider(context: Context) : DynamicIconProvider(context) {
+class LawnchairIconProvider(private val ctx: Context) : DynamicIconProvider(ctx) {
 
-    private val iconPackManager by lazy { IconPackManager.getInstance(context) }
+    private val iconPackManager by lazy { IconPackManager.getInstance(ctx) }
 
     override fun getIcon(launcherActivityInfo: LauncherActivityInfo, iconDpi: Int, flattenDrawable: Boolean): Drawable {
-        return iconPackManager.getIcon(launcherActivityInfo, iconDpi, flattenDrawable, null, this).assertNotAdaptiveIconDrawable(launcherActivityInfo)
+        val icon = iconPackManager.getIcon(launcherActivityInfo, iconDpi, flattenDrawable, null, this)
+        return ThemedIconDrawable.themeIfEnabled(ctx, icon).assertNotAdaptiveIconDrawable(launcherActivityInfo)
     }
 
     fun getIcon(launcherActivityInfo: LauncherActivityInfo, itemInfo: ItemInfo, iconDpi: Int, flattenDrawable: Boolean): Drawable {
-        return iconPackManager.getIcon(launcherActivityInfo, iconDpi, flattenDrawable, itemInfo, this).assertNotAdaptiveIconDrawable(launcherActivityInfo)
+        val icon = iconPackManager.getIcon(launcherActivityInfo, iconDpi, flattenDrawable, itemInfo, this)
+        return ThemedIconDrawable.themeIfEnabled(ctx, icon).assertNotAdaptiveIconDrawable(launcherActivityInfo)
     }
 
     fun getIcon(shortcutInfo: ShortcutInfo, iconDpi: Int): Drawable? {
-        return iconPackManager.getIcon(shortcutInfo, iconDpi).assertNotAdaptiveIconDrawable(shortcutInfo)
+        val icon = iconPackManager.getIcon(shortcutInfo, iconDpi) ?: return null
+        return ThemedIconDrawable.themeIfEnabled(ctx, icon).assertNotAdaptiveIconDrawable(shortcutInfo)
     }
 
     fun getDynamicIcon(launcherActivityInfo: LauncherActivityInfo?, iconDpi: Int, flattenDrawable: Boolean): Drawable {

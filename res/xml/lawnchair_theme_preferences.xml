@@ -32,6 +32,20 @@
             android:key="pref_resetCustomIcons"
             android:title="@string/reset_custom_icons" />
 
+        <ch.deletescape.lawnchair.preferences.StyledSwitchPreferenceCompat
+            android:key="pref_themedIcons"
+            android:defaultValue="false"
+            android:persistent="true"
+            android:title="@string/themed_icons_title"
+            android:summary="@string/themed_icons_summary" />
+
+        <ch.deletescape.lawnchair.colors.preferences.ColorPickerPreference
+            android:key="pref_themedIconColorResolver"
+            android:title="@string/themed_icons_color_title"
+            android:dependency="pref_themedIcons"
+            app:colorMode="RGB"
+            app:resolvers="@array/resolvers_themed_icon"/>
+
         <ch.deletescape.lawnchair.preferences.AdvancedPreferencesGroup
             app:topic="@string/adaptive_icon">
             <ch.deletescape.lawnchair.preferences.StyledSwitchPreferenceCompat
