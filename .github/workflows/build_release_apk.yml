@@ -5,6 +5,9 @@ on:
   push:
     branches:
       - 10-alpha-2
+  pull_request:
+    branches:
+      - 10-alpha-2
 
 jobs:
   build-release-apk:

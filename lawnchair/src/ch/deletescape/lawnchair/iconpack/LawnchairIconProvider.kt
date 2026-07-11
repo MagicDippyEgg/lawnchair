@@ -134,6 +134,11 @@ class LawnchairIconProvider(private val context: Context) : DynamicIconProvider(
         return iconPackManager.getIcon(launcherActivityInfo, iconDpi, flattenDrawable, itemInfo, this).assertNotAdaptiveIconDrawable(launcherActivityInfo)
     }
 
+    override fun getSystemStateForPackage(systemState: String, packageName: String): String {
+        val themeSuffix = ",themed:${context.lawnchairPrefs.themedIcons},drawerThemed:${context.lawnchairPrefs.drawerThemedIcons}"
+        return super.getSystemStateForPackage(systemState, packageName) + themeSuffix
+    }
+
     fun getIcon(shortcutInfo: ShortcutInfo, iconDpi: Int): Drawable? {
         return iconPackManager.getIcon(shortcutInfo, iconDpi).assertNotAdaptiveIconDrawable(shortcutInfo)
     }
