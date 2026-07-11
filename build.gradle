@@ -67,11 +67,24 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'com.google.protobuf'
 
+def debugKeystore = file("debug.keystore")
+if (!debugKeystore.exists()) {
+    println "Generating debug keystore..."
+    def process = "keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname CN=Android,O=Android,C=US".execute()
+    process.waitFor()
+}
+
 android {
     compileSdkVersion 29
     buildToolsVersion BUILD_TOOLS_VERSION
 
     signingConfigs {
+        debug {
+            storeFile file("debug.keystore")
+            storePassword "android"
+            keyAlias "androiddebugkey"
+            keyPassword "android"
+        }
         ci {
             storeFile file("debug.jks")
             storePassword localProps.getProperty("storePass") ?: System.getenv("STORE_PASSWORD")
@@ -129,6 +142,8 @@ android {
                 if (System.getenv("CI_EVENT_TYPE") != "pull_request") {
                     signingConfig signingConfigs.ci
                 }
+            } else {
+                signingConfig signingConfigs.debug
             }
 
             dexOptions {
@@ -152,10 +167,12 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
                     'proguard.flags'
-            if (signed) {
+            if (signed && (localProps.getProperty("storePass") != null || System.getenv("STORE_PASSWORD") != null)) {
                 if (System.getenv("CI_EVENT_TYPE") != "pull_request") {
                     signingConfig signingConfigs.ci
                 }
+            } else {
+                signingConfig signingConfigs.debug
             }
 
             dexOptions {
